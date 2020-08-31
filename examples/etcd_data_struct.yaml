@@ -1,17 +1,41 @@
-/cse-sr/domains/default: |
-/cse-sr/accounts/{account_name}: |
+# services
+/cse-sr/ms/files/default/default/{service_id}: |
+  {"serviceId":"7062417bf9ebd4c646bb23059003cea42180894a","appId":"default","serviceName":"SERVICECENTER","description":"A default service",
+  "version":"0.0.1","level":"BACK","schemas":["servicecenter.grpc.api.ServiceCtrl","servicecenter.grpc.api.ServiceInstanceCtrl"],
+  "paths":[&{"path":"/opt/tomcat/webapp", "property":{"allowCrossApp":"true"}}],"status":"UP","properties":{"allowCrossApp":"true"},
+  "timestamp":"1592570701","framework":&{name: "UNKNOW", version:"0.0.1"},""alias":"SERVICECENTER","modTimestamp":"1592570701","environment":"development"}
+/cse-sr/ms/indexes/default/default/development/default/SERVICECENTER/0.0.1: |
+  {service_id}
+/cse-sr/ms/alias/default/default/development/default/SERVICECENTER/0.0.1: |
+  {service_id}
+# instances
 /cse-sr/inst/files/default/default/{service_id}/{instsance_id}: |
   {"instanceId":"b0ffb9feb22a11eaa76a08002706c83e","serviceId":"7062417bf9ebd4c646bb23059003cea42180894a",
   "endpoints":["rest://127.0.0.1:30100/"],"hostName":"tian-VirtualBox","status":"UP",
   "healthCheck":{"mode":"push","interval":30,"times":3},"timestamp":"1592570701","modTimestamp":"1592570701","version":"0.0.1"}
 /cse-sr/inst/leases/default/default/{service_id}/{instsance_id}: |
-  7587847170149911364
-/cse-sr/ms/alias/default/default/development/default/SERVICECENTER/0.0.1: |
-  {service_id}
-/cse-sr/ms/files/default/default/{service_id}: |
-  {"serviceId":"7062417bf9ebd4c646bb23059003cea42180894a","appId":"default","serviceName":"SERVICECENTER","version":"0.0.1","level":"BACK",
-  "schemas":["servicecenter.grpc.api.ServiceCtrl","servicecenter.grpc.api.ServiceInstanceCtrl"],"status":"UP",
-  "properties":{"allowCrossApp":"true"},"timestamp":"1592570701","alias":"SERVICECENTER","modTimestamp":"1592570701","environment":"development"}
-/cse-sr/ms/indexes/default/default/development/default/SERVICECENTER/0.0.1: |
-  {service_id}
-/cse-sr/projects/default/default:
+  {lease_id}
+# schemas
+/cse-sr/ms/schemas/default/default/{service_id}/{schema_id}: |
+  "servicecenter.grpc.api.ServiceCtrl"
+/cse-sr/ms/schema-sum/default/default/{service_id}/{schema_id}: |
+  {schema_summary}
+# dependencies
+/cse-sr/ms/dep-queue/default/default/{service_id}/0: |
+  {"environment": "development","appId": "aeiou","serviceName": "SERVICECENTER","version": "0.0.1"}
+# tags
+/cse-sr/ms/tags/default/default/{service_id}: |
+  {"a": "1"}
+# rules
+/cse-sr/ms/rules/default/default/{service_id}/{rule_id}: |
+  {"ruleId":"Deny","attribute":"denylist","pattern":"Test*","description":"test BLACK"}
+/cse-sr/ms/rule-indexes/default/default/{service_id}/denylist/Test: |
+  "Deny"
+# governance
+# rbac
+/cse-sr/accounts/{account_name}: |
+  {encrypted_password}
+
+# project domain
+/cse-sr/domains/default: |
+/cse-sr/projects/default/default: |
