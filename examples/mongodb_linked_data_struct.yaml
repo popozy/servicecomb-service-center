@@ -1,0 +1,181 @@
+#collection: service
+#document record:
+{
+  "_id": "xxx",
+  "serviceId": "7062417bf9ebd4c646bb23059003cea42180894a",
+  "appId": "",
+  "serviceName": "SERVICE-CENTER",
+  "domain": "default",
+  "project": "default",
+  "version": "0.0.1",
+  "description": "This is data struct in mongodb",
+  "level": "info",
+  "schema": ["first_schema", "second_schema"],
+  "paths": [{
+              "Path": "aeiou",
+              "Property": {}
+            } ],
+  "status": "UP",
+  "properties": { "allowCrossApp": "true" },
+  "timestamp": "1500519927",
+  "providers":[{
+                 "appId": "",
+                 "serviceName": "SERVICE-CENTER",
+                 "version": "0.0.2"
+               }],
+  "alias": "service-center",
+  "LBStrategy": {"strategy-1": "round-robin"},
+  "modTimeStamp": "1500519927",
+  "environment": "development",
+  "registerBy": "PLATFORM",
+  "framework": {"name": "UNKNOW", "version": "0.0.1"}
+}
+
+#type MicroServiceInstance struct {
+#  InstanceId     string            `protobuf:"bytes,1,opt,name=instanceId" json:"instanceId,omitempty"`
+#  ServiceId      string            `protobuf:"bytes,2,opt,name=serviceId" json:"serviceId,omitempty"`
+#  Endpoints      []string          `protobuf:"bytes,3,rep,name=endpoints" json:"endpoints,omitempty"`
+#  HostName       string            `protobuf:"bytes,4,opt,name=hostName" json:"hostName,omitempty"`
+#  Status         string            `protobuf:"bytes,5,opt,name=status" json:"status,omitempty"`
+#  Properties     map[string]string `protobuf:"bytes,6,rep,name=properties" json:"properties,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+#  HealthCheck    *HealthCheck      `protobuf:"bytes,7,opt,name=healthCheck" json:"healthCheck,omitempty"`
+#  Timestamp      string            `protobuf:"bytes,8,opt,name=timestamp" json:"timestamp,omitempty"`
+#  DataCenterInfo *DataCenterInfo   `protobuf:"bytes,9,opt,name=dataCenterInfo" json:"dataCenterInfo,omitempty"`
+#  ModTimestamp   string            `protobuf:"bytes,10,opt,name=modTimestamp" json:"modTimestamp,omitempty"`
+#  Version        string            `protobuf:"bytes,11,opt,name=version" json:"version,omitempty"`
+#}
+
+# collection: instance
+{
+  "_id": "xxx",
+  "instanceid": "7062417bf9ebd4c646bb23059003cea42180894b",
+  "serviceId": "7062417bf9ebd4c646bb23059003cea42180894a",
+  "domain": "default",
+  "project": "default",
+  "endpoints": [
+    "rest://192.168.88.109:30100/"
+  ],
+  "hostName": "cse",
+  "status": "normal",
+  "properties": {
+    "allowCrossApp": "true"
+  },
+  "healthCheck": {
+    "mode": "push",
+    "times": 1,
+    "port": 0,
+    "interval": 6
+  },
+  "timestamp": "1500519927",
+  "dataCenterInfo": {
+    "availableZone": "az1",
+    "name": "dc1",
+    "region": "cn-north"
+  },
+  "modTimestamp": "1500519927",
+  "leaseId": "1234",
+  "version": "0.0.2"
+}
+
+# collection schema
+{
+  "_id": "xxx",
+  "serviceId": "7062417bf9ebd4c646bb23059003cea42180894b",
+  "schemaId": "first_schema",
+  "domain": "default",
+  "project": "default",
+  "schema": "schema",
+  "summary": "summary"
+}
+
+#type ServiceRule struct {
+#  RuleId       string `protobuf:"bytes,1,opt,name=ruleId" json:"ruleId,omitempty"`
+#  RuleType     string `protobuf:"bytes,2,opt,name=ruleType" json:"ruleType,omitempty"`
+#  Attribute    string `protobuf:"bytes,3,opt,name=attribute" json:"attribute,omitempty"`
+#  Pattern      string `protobuf:"bytes,4,opt,name=pattern" json:"pattern,omitempty"`
+#  Description  string `protobuf:"bytes,5,opt,name=description" json:"description,omitempty"`
+#  Timestamp    string `protobuf:"bytes,6,opt,name=timestamp" json:"timestamp,omitempty"`
+#  ModTimestamp string `protobuf:"bytes,7,opt,name=modTimestamp" json:"modTimestamp,omitempty"`
+#}
+# collection rules
+{
+  "_id": "xxx",
+  "domain": "default",
+  "project": "default",
+  "serviceId": "7062417bf9ebd4c646bb23059003cea42180894b",
+  "ruleId": "Deny",
+  "roleType": "admin",
+  "attribute": "tag_a",
+  "pattern": "a+",
+  "description": "aeiou",
+  "timestamp": "1500519927",
+  "modTimestamp": "1500519928"
+}
+
+# collection tags
+{
+  "_id": "xxx",
+  "domain": "default",
+  "project": "default",
+  "serviceId": "7062417bf9ebd4c646bb23059003cea42180894b",
+  "tagKey1": "tagValue1",
+  "tagKey2": "tagValue2"
+}
+
+# collection dependencies
+#type ConsumerDependency struct {
+#  Consumer  *MicroServiceKey   `protobuf:"bytes,1,opt,name=consumer" json:"consumer,omitempty"`
+#  Providers []*MicroServiceKey `protobuf:"bytes,2,rep,name=providers" json:"providers,omitempty"`
+#  Override  bool               `protobuf:"varint,3,opt,name=override" json:"override,omitempty"`
+#}
+{
+  "_id": "xxx",
+  "domain": "default",
+  "project": "default",
+  #  serviceId
+  "consumerId": "7062417bf9ebd4c646bb23059003cea42180894b",
+  "uuid": "0",
+  "consumer": {
+    "tenant": "default/default",
+    "project": "project",
+    "appId": "appId",
+    "serviceName": "ServiceCenter",
+    "version": "0.0.1",
+    "environment": "development",
+    "alias": "serviceCenter"
+  },
+  "provider": [{
+                 "tenant": "default/default",
+                 "project": "project",
+                 "appId": "appId",
+                 "serviceName": "ServiceCenterProvider",
+                 "version": "0.0.2",
+                 "environment": "development",
+                 "alias": "serviceCenterProvider"
+               }],
+  "override": true
+}
+
+# collection auth
+{
+  "_id": "xxx",
+  "account": "account_name",
+  "password": "password",
+  "role": "admin",
+  "tokenExpirationTime": "1500519927",
+  "currentPassword": "password",
+  "status": "normal"
+}
+
+# collection domain
+{
+  "_id": "xxx",
+  "domain": "domain"
+}
+
+# collection project
+{
+  "_id": "xxx",
+  "domain": "domain",
+  "project": "project"
+}

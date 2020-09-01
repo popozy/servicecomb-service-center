@@ -3,7 +3,7 @@
   {"serviceId":"7062417bf9ebd4c646bb23059003cea42180894a","appId":"default","serviceName":"SERVICECENTER","description":"A default service",
   "version":"0.0.1","level":"BACK","schemas":["servicecenter.grpc.api.ServiceCtrl","servicecenter.grpc.api.ServiceInstanceCtrl"],
   "paths":[&{"path":"/opt/tomcat/webapp", "property":{"allowCrossApp":"true"}}],"status":"UP","properties":{"allowCrossApp":"true"},
-  "timestamp":"1592570701","framework":&{name: "UNKNOW", version:"0.0.1"},""alias":"SERVICECENTER","modTimestamp":"1592570701","environment":"development"}
+  "timestamp":"1592570701","framework":{name: "UNKNOW", version:"0.0.1"},""alias":"SERVICECENTER","modTimestamp":"1592570701","environment":"development"}
 /cse-sr/ms/indexes/default/default/development/default/SERVICECENTER/0.0.1: |
   {service_id}
 /cse-sr/ms/alias/default/default/development/default/SERVICECENTER/0.0.1: |
@@ -32,9 +32,17 @@
 /cse-sr/ms/rule-indexes/default/default/{service_id}/denylist/Test: |
   "Deny"
 # governance
-# rbac
+# auth
 /cse-sr/accounts/{account_name}: |
-  {encrypted_password}
+  {
+    "_id": "xxx",
+    "account": "account_name",
+    "password": "password",
+    "role": "admin",
+    "tokenExpirationTime": "1500519927",
+    "currentPassword": "password",
+    "status": "normal"
+  }
 
 # project domain
 /cse-sr/domains/default: |
