@@ -35,7 +35,6 @@ import (
 	"github.com/apache/servicecomb-service-center/server/plugin"
 	"github.com/apache/servicecomb-service-center/server/plugin/quota"
 	"github.com/apache/servicecomb-service-center/server/plugin/registry"
-	"github.com/apache/servicecomb-service-center/server/plugin/uuid"
 	scerr "github.com/apache/servicecomb-service-center/server/scerror"
 	serviceUtil "github.com/apache/servicecomb-service-center/server/service/util"
 
@@ -92,125 +91,127 @@ func (s *MicroServiceService) CreateServicePri(ctx context.Context, in *pb.Creat
 			Response: proto.CreateResponse(scerr.ErrInvalidParams, err.Error()),
 		}, nil
 	}
+	resp, err := backend.Database().RegisterService(ctx, in.Service)
 
-	domainProject := util.ParseDomainProject(ctx)
-
-	serviceKey := &pb.MicroServiceKey{
-		Tenant:      domainProject,
-		Environment: service.Environment,
-		AppId:       service.AppId,
-		ServiceName: service.ServiceName,
-		Alias:       service.Alias,
-		Version:     service.Version,
-	}
-	reporter := checkQuota(ctx, domainProject)
-	defer reporter.Close(ctx)
-
-	if reporter != nil && reporter.Err != nil {
-		log.Errorf(reporter.Err, "create micro-service[%s] failed, operator: %s",
-			serviceFlag, remoteIP)
-		resp := &pb.CreateServiceResponse{
-			Response: proto.CreateResponseWithSCErr(reporter.Err),
-		}
-		if reporter.Err.InternalError() {
-			return resp, reporter.Err
-		}
-		return resp, nil
-	}
-
-	index := apt.GenerateServiceIndexKey(serviceKey)
-
-	// 产生全局service id
-	requestServiceID := service.ServiceId
-	if len(requestServiceID) == 0 {
-		ctx = util.SetContext(ctx, uuid.ContextKey, index)
-		service.ServiceId = plugin.Plugins().UUID().GetServiceID(ctx)
-	}
-	service.Timestamp = strconv.FormatInt(time.Now().Unix(), 10)
-	service.ModTimestamp = service.Timestamp
-
-	data, err := json.Marshal(service)
-	if err != nil {
-		log.Errorf(err, "create micro-service[%s] failed, json marshal service failed, operator: %s",
-			serviceFlag, remoteIP)
-		return &pb.CreateServiceResponse{
-			Response: proto.CreateResponse(scerr.ErrInternal, err.Error()),
-		}, err
-	}
-
-	key := apt.GenerateServiceKey(domainProject, service.ServiceId)
-	keyBytes := util.StringToBytesWithNoCopy(key)
-	indexBytes := util.StringToBytesWithNoCopy(index)
-	aliasBytes := util.StringToBytesWithNoCopy(apt.GenerateServiceAliasKey(serviceKey))
-
-	opts := []registry.PluginOp{
-		registry.OpPut(registry.WithKey(keyBytes), registry.WithValue(data)),
-		registry.OpPut(registry.WithKey(indexBytes), registry.WithStrValue(service.ServiceId)),
-	}
-	uniqueCmpOpts := []registry.CompareOp{
-		registry.OpCmp(registry.CmpVer(indexBytes), registry.CmpEqual, 0),
-		registry.OpCmp(registry.CmpVer(keyBytes), registry.CmpEqual, 0),
-	}
-	failOpts := []registry.PluginOp{
-		registry.OpGet(registry.WithKey(indexBytes)),
-	}
-
-	if len(serviceKey.Alias) > 0 {
-		opts = append(opts, registry.OpPut(registry.WithKey(aliasBytes), registry.WithStrValue(service.ServiceId)))
-		uniqueCmpOpts = append(uniqueCmpOpts,
-			registry.OpCmp(registry.CmpVer(aliasBytes), registry.CmpEqual, 0))
-		failOpts = append(failOpts, registry.OpGet(registry.WithKey(aliasBytes)))
-	}
-
-	resp, err := backend.Registry().TxnWithCmp(ctx, opts, uniqueCmpOpts, failOpts)
-	if err != nil {
-		log.Errorf(err, "create micro-service[%s] failed, operator: %s",
-			serviceFlag, remoteIP)
-		return &pb.CreateServiceResponse{
-			Response: proto.CreateResponse(scerr.ErrUnavailableBackend, err.Error()),
-		}, err
-	}
-	if !resp.Succeeded {
-		if len(requestServiceID) != 0 {
-			if len(resp.Kvs) == 0 ||
-				requestServiceID != util.BytesToStringWithNoCopy(resp.Kvs[0].Value) {
-				log.Warnf("create micro-service[%s] failed, service already exists, operator: %s",
-					serviceFlag, remoteIP)
-				return &pb.CreateServiceResponse{
-					Response: proto.CreateResponse(scerr.ErrServiceAlreadyExists,
-						"ServiceID conflict or found the same service with different id."),
-				}, nil
-			}
-		}
-
-		if len(resp.Kvs) == 0 {
-			// internal error?
-			log.Errorf(nil, "create micro-service[%s] failed, unexpected txn response, operator: %s",
-				serviceFlag, remoteIP)
-			return &pb.CreateServiceResponse{
-				Response: proto.CreateResponse(scerr.ErrInternal, "Unexpected txn response."),
-			}, nil
-		}
-
-		serviceIDInner := util.BytesToStringWithNoCopy(resp.Kvs[0].Value)
-		log.Warnf("create micro-service[%s][%s] failed, service already exists, operator: %s",
-			serviceIDInner, serviceFlag, remoteIP)
-		return &pb.CreateServiceResponse{
-			Response:  proto.CreateResponse(proto.Response_SUCCESS, "register service successfully"),
-			ServiceId: serviceIDInner,
-		}, nil
-	}
-
-	if err := reporter.ReportUsedQuota(ctx); err != nil {
-		log.Errorf(err, "report the used quota failed")
-	}
-
-	log.Infof("create micro-service[%s][%s] successfully, operator: %s",
-		service.ServiceId, serviceFlag, remoteIP)
-	return &pb.CreateServiceResponse{
-		Response:  proto.CreateResponse(proto.Response_SUCCESS, "Register service successfully."),
-		ServiceId: service.ServiceId,
-	}, nil
+	//domainProject := util.ParseDomainProject(ctx)
+	//
+	//serviceKey := &pb.MicroServiceKey{
+	//	Tenant:      domainProject,
+	//	Environment: service.Environment,
+	//	AppId:       service.AppId,
+	//	ServiceName: service.ServiceName,
+	//	Alias:       service.Alias,
+	//	Version:     service.Version,
+	//}
+	//reporter := checkQuota(ctx, domainProject)
+	//defer reporter.Close(ctx)
+	//
+	//if reporter != nil && reporter.Err != nil {
+	//	log.Errorf(reporter.Err, "create micro-service[%s] failed, operator: %s",
+	//		serviceFlag, remoteIP)
+	//	resp := &pb.CreateServiceResponse{
+	//		Response: proto.CreateResponseWithSCErr(reporter.Err),
+	//	}
+	//	if reporter.Err.InternalError() {
+	//		return resp, reporter.Err
+	//	}
+	//	return resp, nil
+	//}
+	//
+	//index := apt.GenerateServiceIndexKey(serviceKey)
+	//
+	//// 产生全局service id
+	//requestServiceID := service.ServiceId
+	//if len(requestServiceID) == 0 {
+	//	ctx = util.SetContext(ctx, uuid.ContextKey, index)
+	//	service.ServiceId = plugin.Plugins().UUID().GetServiceID(ctx)
+	//}
+	//service.Timestamp = strconv.FormatInt(time.Now().Unix(), 10)
+	//service.ModTimestamp = service.Timestamp
+	//
+	//data, err := json.Marshal(service)
+	//if err != nil {
+	//	log.Errorf(err, "create micro-service[%s] failed, json marshal service failed, operator: %s",
+	//		serviceFlag, remoteIP)
+	//	return &pb.CreateServiceResponse{
+	//		Response: proto.CreateResponse(scerr.ErrInternal, err.Error()),
+	//	}, err
+	//}
+	//
+	//key := apt.GenerateServiceKey(domainProject, service.ServiceId)
+	//keyBytes := util.StringToBytesWithNoCopy(key)
+	//indexBytes := util.StringToBytesWithNoCopy(index)
+	//aliasBytes := util.StringToBytesWithNoCopy(apt.GenerateServiceAliasKey(serviceKey))
+	//
+	//opts := []registry.PluginOp{
+	//	registry.OpPut(registry.WithKey(keyBytes), registry.WithValue(data)),
+	//	registry.OpPut(registry.WithKey(indexBytes), registry.WithStrValue(service.ServiceId)),
+	//}
+	//uniqueCmpOpts := []registry.CompareOp{
+	//	registry.OpCmp(registry.CmpVer(indexBytes), registry.CmpEqual, 0),
+	//	registry.OpCmp(registry.CmpVer(keyBytes), registry.CmpEqual, 0),
+	//}
+	//failOpts := []registry.PluginOp{
+	//	registry.OpGet(registry.WithKey(indexBytes)),
+	//}
+	//
+	//if len(serviceKey.Alias) > 0 {
+	//	opts = append(opts, registry.OpPut(registry.WithKey(aliasBytes), registry.WithStrValue(service.ServiceId)))
+	//	uniqueCmpOpts = append(uniqueCmpOpts,
+	//		registry.OpCmp(registry.CmpVer(aliasBytes), registry.CmpEqual, 0))
+	//	failOpts = append(failOpts, registry.OpGet(registry.WithKey(aliasBytes)))
+	//}
+	//
+	//resp, err := backend.Registry().TxnWithCmp(ctx, opts, uniqueCmpOpts, failOpts)
+	//if err != nil {
+	//	log.Errorf(err, "create micro-service[%s] failed, operator: %s",
+	//		serviceFlag, remoteIP)
+	//	return &pb.CreateServiceResponse{
+	//		Response: proto.CreateResponse(scerr.ErrUnavailableBackend, err.Error()),
+	//	}, err
+	//}
+	//if !resp.Succeeded {
+	//	if len(requestServiceID) != 0 {
+	//		if len(resp.Kvs) == 0 ||
+	//			requestServiceID != util.BytesToStringWithNoCopy(resp.Kvs[0].Value) {
+	//			log.Warnf("create micro-service[%s] failed, service already exists, operator: %s",
+	//				serviceFlag, remoteIP)
+	//			return &pb.CreateServiceResponse{
+	//				Response: proto.CreateResponse(scerr.ErrServiceAlreadyExists,
+	//					"ServiceID conflict or found the same service with different id."),
+	//			}, nil
+	//		}
+	//	}
+	//
+	//	if len(resp.Kvs) == 0 {
+	//		// internal error?
+	//		log.Errorf(nil, "create micro-service[%s] failed, unexpected txn response, operator: %s",
+	//			serviceFlag, remoteIP)
+	//		return &pb.CreateServiceResponse{
+	//			Response: proto.CreateResponse(scerr.ErrInternal, "Unexpected txn response."),
+	//		}, nil
+	//	}
+	//
+	//	serviceIDInner := util.BytesToStringWithNoCopy(resp.Kvs[0].Value)
+	//	log.Warnf("create micro-service[%s][%s] failed, service already exists, operator: %s",
+	//		serviceIDInner, serviceFlag, remoteIP)
+	//	return &pb.CreateServiceResponse{
+	//		Response:  proto.CreateResponse(proto.Response_SUCCESS, "register service successfully"),
+	//		ServiceId: serviceIDInner,
+	//	}, nil
+	//}
+	//
+	//if err := reporter.ReportUsedQuota(ctx); err != nil {
+	//	log.Errorf(err, "report the used quota failed")
+	//}
+	//
+	//log.Infof("create micro-service[%s][%s] successfully, operator: %s",
+	//	service.ServiceId, serviceFlag, remoteIP)
+	//return &pb.CreateServiceResponse{
+	//	Response:  proto.CreateResponse(proto.Response_SUCCESS, "Register service successfully."),
+	//	ServiceId: service.ServiceId,
+	//}, nil
+	return resp, nil
 }
 
 func checkQuota(ctx context.Context, domainProject string) *quota.ApplyQuotaResult {

@@ -543,7 +543,7 @@ var _ = Describe("'Schema' service", func() {
 				Expect(err).To(BeNil())
 				Expect(respModifySchema.Response.GetCode()).To(Equal(proto.Response_SUCCESS))
 
-				By("add schemas when summary in database is empty")
+				By("add schemas when summary in databaseDriver is empty")
 				schemas := []*pb.Schema{
 					{
 						SchemaId: "first_schemaId",

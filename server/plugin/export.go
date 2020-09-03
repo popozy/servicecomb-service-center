@@ -18,6 +18,7 @@ package plugin
 import (
 	"github.com/apache/servicecomb-service-center/server/plugin/auditlog"
 	"github.com/apache/servicecomb-service-center/server/plugin/auth"
+	"github.com/apache/servicecomb-service-center/server/plugin/databaseDriver"
 	"github.com/apache/servicecomb-service-center/server/plugin/discovery"
 	"github.com/apache/servicecomb-service-center/server/plugin/quota"
 	"github.com/apache/servicecomb-service-center/server/plugin/registry"
@@ -37,6 +38,7 @@ const (
 	TRACING
 	TLS
 	DISCOVERY
+	DataBaseDriver
 	typeEnd // for counting
 )
 
@@ -50,6 +52,7 @@ var pluginNames = map[Name]string{
 	TRACING:   "trace",
 	DISCOVERY: "discovery",
 	TLS:       "ssl",
+	DataBaseDriver:  "databaseDriver",
 }
 
 func (pm *Manager) Discovery() discovery.AdaptorRepository {
@@ -67,3 +70,6 @@ func (pm *Manager) Cipher() security.Cipher      { return pm.Instance(CIPHER).(s
 func (pm *Manager) Quota() quota.Manager         { return pm.Instance(QUOTA).(quota.Manager) }
 func (pm *Manager) Tracing() (v tracing.Tracing) { return pm.Instance(TRACING).(tracing.Tracing) }
 func (pm *Manager) TLS() tls.TLS                 { return pm.Instance(TLS).(tls.TLS) }
+func (pm *Manager) DatabaseDriver() databaseDriver.DatabaseDriver {
+	return pm.Instance(DataBaseDriver).(databaseDriver.DatabaseDriver)
+}
